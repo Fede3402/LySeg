@@ -216,3 +216,15 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# Images
+data/
+imagesTr/
+labelsTr/
+checkpoints/
+*.nii.gz
+*.nii
+*.pth
+*.pt
+*.csv
+*.json
