@@ -1,14 +1,14 @@
 import os 
 import numpy as np
 import torch 
-import torch as nn
+import torch.nn as nn
 import monai 
 import json 
 
 from tqdm import tqdm
 
 
-from monai.losses import DiceCEloss
+from monai.losses import DiceCELoss
 from monai.metrics import DiceMetric
 from monai.inferers import sliding_window_inference
 
@@ -18,7 +18,7 @@ from ..dataset.data_loader import get_loaders
 
 # CONFIGURATION 
 
-json_path = "../data/Lymphoma_segmentation/dataset.json"
+json_path = "kaggle/working/dataset_kaggle.json"
 checkpoint_dir = "../checkpoints/"
 
 os.makedirs(checkpoint_dir, exist_ok=True)
@@ -44,7 +44,7 @@ def train():
     ).to(device)
 
     # Loss function and optimizer
-    loss_function = DiceCEloss(to_onehot_y=False, sigmoid=True)
+    loss_function = DiceCELoss(to_onehot_y=False, sigmoid=True)
     optimizer = torch.optim.Adam(model.parameters(), lr=lr)
     dice_metric = DiceMetric(include_background=False, reduction="mean")
 
@@ -110,7 +110,7 @@ def train():
                 if metric > best_dice:
                     best_dice = metric
                     torch.save(model.state_dict(), os.path.join(checkpoint_dir, "best_model.pth"))
-                    print(f"    [!] Nuovo record di Dice Score! Modello salvato in {CHECKPOINT_DIR}")
+                    print(f"    [!] Nuovo record di Dice Score! Modello salvato in {checkpoint_dir}")
 
 if __name__ == "__main__":
     train()
