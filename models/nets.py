@@ -1,12 +1,19 @@
 import torch 
 import torch.nn as nn 
-from MONAI.networks.nets import BasicUNet
+from monai.networks.nets import BasicUNet
 from .blocks import LiverConditioning
 
 class ConitionedBasicUNet(BasicUNet):
-    def __init__(self,*args,**kwargs):
-        super().__init__(*args,**kwargs)
-        
+    def __init__(self, spatial_dims, in_channels, out_channels, features, **kwargs):
+        super().__init__(
+            spatial_dims=spatial_dims, 
+            in_channels=in_channels, 
+            out_channels=out_channels, 
+            features=features, 
+            **kwargs
+        )
+        self.features = features
+
         bottleneck_channels = self.features[4]
 
         self.liver_conditioning = LiverConditioning(bottleneck_channels)
@@ -29,8 +36,7 @@ class ConitionedBasicUNet(BasicUNet):
         x_up = self.upcat_2(x_up, x2)
         x_up = self.upcat_1(x_up, x1)
 
-        logits = self.upsample(x_up)
-        logits = self.conv_out(logits)
+        logits = self.final_conv(x_up)
 
         return logits
 

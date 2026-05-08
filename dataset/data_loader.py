@@ -10,6 +10,7 @@ from monai.transforms import (
     ScaleIntensityd,
     RandCropByPosNegLabeld,
     ToTensord,
+    ConcatItemsd
 )
 
 
@@ -21,8 +22,10 @@ def get_loaders(json_path: str, batch_size: int = 2):
         data = json.load(f)
 
     train_transforms = Compose([
-        LoadImaged(keys=["image", "label"]),
-        EnsureChannelFirstd(keys=["image", "label"]),
+        LoadImaged(keys=["pet","ct","label"]),
+        EnsureChannelFirstd(keys=["pet", "ct","label"]),
+        ConcatItemsd(keys=["pet","ct"], name = "image"),
+
         ScaleIntensityd(keys=["image"]),
         
         RandCropByPosNegLabeld(

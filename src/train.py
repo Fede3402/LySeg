@@ -40,7 +40,7 @@ def train():
         spatial_dims=3,
         in_channels=2,
         out_channels=1,
-        features = (16, 32, 64, 128, 256)
+        features = (16, 32, 64, 128, 256, 16)
     ).to(device)
 
     # Loss function and optimizer
