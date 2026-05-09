@@ -22,12 +22,9 @@ def get_loaders(json_path: str, batch_size: int = 2):
         data = json.load(f)
 
     train_transforms = Compose([
-        LoadImaged(keys=["pet","ct","label"]),
-        EnsureChannelFirstd(keys=["pet", "ct","label"]),
-        ConcatItemsd(keys=["pet","ct"], name = "image"),
-
+        LoadImaged(keys=["image", "label"]),
+        EnsureChannelFirstd(keys=["image", "label"]),
         ScaleIntensityd(keys=["image"]),
-        
         RandCropByPosNegLabeld(
             keys=["image", "label"],
             label_key="label",

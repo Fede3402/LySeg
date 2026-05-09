@@ -13,7 +13,7 @@ from monai.metrics import DiceMetric
 from monai.inferers import sliding_window_inference
 
 
-from ..models.nets import ConitionedBasicUNet
+from ..models.nets import ConditionedBasicUNet
 from ..dataset.data_loader import get_loaders
 
 # CONFIGURATION 
@@ -28,7 +28,7 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 # PARAMETERS 
 val_interval = 5
 max_epochs = 100 
-batch_size = 2 
+batch_size = 4
 lr = 1e-4 
 
 def train():
@@ -36,7 +36,7 @@ def train():
     train_loader, val_loader = get_loaders(json_path, batch_size)
 
     # Model definition 
-    model = ConitionedBasicUNet(
+    model = ConditionedBasicUNet(
         spatial_dims=3,
         in_channels=2,
         out_channels=1,

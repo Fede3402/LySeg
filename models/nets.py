@@ -3,7 +3,7 @@ import torch.nn as nn
 from monai.networks.nets import BasicUNet
 from .blocks import LiverConditioning
 
-class ConitionedBasicUNet(BasicUNet):
+class ConditionedBasicUNet(BasicUNet):
     def __init__(self, spatial_dims, in_channels, out_channels, features, **kwargs):
         super().__init__(
             spatial_dims=spatial_dims, 
