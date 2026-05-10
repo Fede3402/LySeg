@@ -5,7 +5,7 @@ from monai.data import PersistentDataset, DataLoader
 from monai.transforms import (
     Compose, LoadImaged, EnsureChannelFirstd, Spacingd, 
     CropForegroundd, NormalizeIntensityd, RandCropByPosNegLabeld, 
-    RandAffined, RandGaussianNoised, RandFlipd, ToTensord
+    RandAffined, RandGaussianNoised, RandFlipd, ToTensord, ConcatItemsd
 )
 
 def get_loaders(json_path: str, batch_size: int = 4):
@@ -18,8 +18,9 @@ def get_loaders(json_path: str, batch_size: int = 4):
 
     # 1. TRASFORMAZIONI COMUNI (Deterministiche, vengono salvate in cache)
     common_transforms = [
-        LoadImaged(keys=["image", "label"]),
-        EnsureChannelFirstd(keys=["image", "label"]),
+        LoadImaged(keys=["pet", "ct", "label"]),
+        EnsureChannelFirstd(keys=["pet", "ct","label"]),
+        ConcatItemsd(keys=["pet", "ct"], name="image"),
         # Ricampionamento isotropico (2x2x2 mm)
         Spacingd(keys=["image", "label"], pixdim=(2.0, 2.0, 2.0), mode=("bilinear", "nearest")),
         # Rimozione background inutile

@@ -23,7 +23,6 @@ checkpoint_dir = "../checkpoints/"
 
 os.makedirs(checkpoint_dir, exist_ok=True)
 
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 # PARAMETERS 
 val_interval = 5
@@ -41,15 +40,17 @@ def train():
         in_channels=2,
         out_channels=1,
         features = (16, 32, 64, 128, 256, 16)
-    ).to(device)
+    )
 
-    # -- MULTI-GPU --
     if torch.cuda.device_count() > 1:
         print(f"[*] Ottimizzazione: Rilevate {torch.cuda.device_count()} GPU. Attivazione DataParallel!")
         model = torch.nn.DataParallel(model)
         
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    
+    # 3. SPOSTI IL MODELLO SULLA GPU QUI, una volta sola
     model = model.to(device)
+
 
     # Loss function and optimizer
     loss_function = DiceCELoss(to_onehot_y=False, sigmoid=True)
