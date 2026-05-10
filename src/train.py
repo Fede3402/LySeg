@@ -43,9 +43,17 @@ def train():
         features = (16, 32, 64, 128, 256, 16)
     ).to(device)
 
+    # -- MULTI-GPU --
+    if torch.cuda.device_count() > 1:
+        print(f"[*] Ottimizzazione: Rilevate {torch.cuda.device_count()} GPU. Attivazione DataParallel!")
+        model = torch.nn.DataParallel(model)
+        
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    model = model.to(device)
+
     # Loss function and optimizer
     loss_function = DiceCELoss(to_onehot_y=False, sigmoid=True)
-    optimizer = torch.optim.Adam(model.parameters(), lr=lr)
+    optimizer = torch.optim.AdamW(model.parameters(), lr=lr, weight_decay=1e-5)
     dice_metric = DiceMetric(include_background=False, reduction="mean")
 
     best_dice = -1
@@ -95,7 +103,7 @@ def train():
                     val_suv = val_batch["suv_prior"].view(-1, 1).float().to(device)
 
                     val_outputs = sliding_window_inference(
-                        val_images, (96, 96, 96), 4, model, suv_prior=val_suv
+                        val_images, (128, 128, 128), 4, model, suv_prior=val_suv
                     )
                     
                     val_outputs = (torch.sigmoid(val_outputs) > 0.5).float()
