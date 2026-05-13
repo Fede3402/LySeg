@@ -18,11 +18,10 @@ def get_loaders(json_path: str, batch_size: int = 4):
 
     # 1. TRASFORMAZIONI COMUNI (Deterministiche, vengono salvate in cache)
     common_transforms = [
-        LoadImaged(keys=["pet", "ct", "label"]),
-        EnsureChannelFirstd(keys=["pet", "ct","label"]),
-        ConcatItemsd(keys=["pet", "ct"], name="image"),
+        LoadImaged(keys=["image", "label"]),
+        EnsureChannelFirstd(keys=["image","label"]),
         # Ricampionamento isotropico (2x2x2 mm)
-        Spacingd(keys=["image", "label"], pixdim=(2.0, 2.0, 2.0), mode=("bilinear", "nearest")),
+        Spacingd(keys=["image", "label"], pixdim=(3.0, 3.0, 3.0), mode=("bilinear", "nearest")),
         # Rimozione background inutile
         CropForegroundd(keys=["image", "label"], source_key="image"),
         # Normalizzazione Z-Score per singolo canale (CT e PET trattate separatamente)
@@ -33,7 +32,7 @@ def get_loaders(json_path: str, batch_size: int = 4):
     train_transforms = Compose(common_transforms + [
         RandCropByPosNegLabeld(
             keys=["image", "label"], label_key="label",
-            spatial_size=(128, 128, 128), pos=1, neg=1, num_samples=2
+            spatial_size=(128, 128, 128), pos=2, neg=1, num_samples=2
         ),
         # Augmentation stile nnU-Net
         RandAffined(
