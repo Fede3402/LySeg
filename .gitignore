@@ -228,3 +228,6 @@ checkpoints/
 *.pt
 *.csv
 *.json
+
+# Note
+*.txt
