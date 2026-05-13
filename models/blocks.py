@@ -27,6 +27,8 @@ class FiLMconditioning(nn.Module):
         inner_dim = max(target_channels // reduction, 8)
 
         self.mlp = nn.Sequential(
+            nn.LayerNorm(num_prior_stats),
+            nn.Dropout(p=dropout_rate),
             nn.Linear(num_prior_stats, inner_dim),
             nn.LayerNorm(inner_dim),
             nn.SiLU(inplace=True),

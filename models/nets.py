@@ -51,7 +51,7 @@ class PriorUNet(nn.Module):
             in_channels = 2, 
             out_channels = 1, 
             features = (16,32,64,128,256),
-            num_prior_stats = 4,
+            num_prior_stats = 1,
             dropout = 0.2
     ):
         super().__init__()

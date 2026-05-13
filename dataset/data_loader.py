@@ -5,7 +5,7 @@ from monai.data import PersistentDataset, DataLoader
 from monai.transforms import (
     Compose, LoadImaged, EnsureChannelFirstd, Spacingd, 
     CropForegroundd, NormalizeIntensityd, RandCropByPosNegLabeld, 
-    RandAffined, RandGaussianNoised, RandFlipd, ToTensord, ConcatItemsd
+    RandAffined, RandGaussianNoised, RandFlipd, ToTensord, CastToTyped
 )
 
 def get_loaders(json_path: str, batch_size: int = 4):
@@ -20,6 +20,7 @@ def get_loaders(json_path: str, batch_size: int = 4):
     common_transforms = [
         LoadImaged(keys=["image", "label"]),
         EnsureChannelFirstd(keys=["image","label"]),
+        CastToTyped(keys=["prior"], dtype=np.float32),
         # Ricampionamento isotropico (2x2x2 mm)
         Spacingd(keys=["image", "label"], pixdim=(3.0, 3.0, 3.0), mode=("bilinear", "nearest")),
         # Rimozione background inutile
@@ -41,12 +42,12 @@ def get_loaders(json_path: str, batch_size: int = 4):
         ),
         RandGaussianNoised(keys=["image"], prob=0.1, std=0.05),
         RandFlipd(keys=["image", "label"], spatial_axis=[0, 1, 2], prob=0.5),
-        ToTensord(keys=["image", "label", "suv_prior"])
+        ToTensord(keys=["image", "label", "prior"])
     ])
 
     # 3. TRASFORMAZIONI DI VALIDATION (Nessuna augmentation)
     val_transforms = Compose(common_transforms + [
-        ToTensord(keys=["image", "label", "suv_prior"])
+        ToTensord(keys=["image", "label", "prior"])
     ])
 
     # Utilizzo del PersistentDataset per saltare il collo di bottiglia della CPU

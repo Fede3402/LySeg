@@ -13,8 +13,11 @@ from monai.metrics import DiceMetric
 from monai.inferers import sliding_window_inference
 
 
-from ..models.nets import ConditionedBasicUNet
+from ..models.nets import PriorUNet
 from ..dataset.data_loader import get_loaders
+from ..utilities.utils import get_film_stats, get_grad_norm
+
+
 
 # CONFIGURATION 
 
@@ -35,11 +38,13 @@ def train():
     train_loader, val_loader = get_loaders(json_path, batch_size)
 
     # Model definition 
-    model = ConditionedBasicUNet(
+    model = PriorUNet(
         spatial_dims=3,
         in_channels=2,
         out_channels=1,
-        features = (16, 32, 64, 128, 256, 16)
+        features = (16, 32, 64, 128, 256),
+        num_prior_stats=11,
+        dropout=0.2
     )
 
     if torch.cuda.device_count() > 1:
@@ -73,14 +78,23 @@ def train():
         for step, batch in enumerate(progress_bar, 1):
             inputs = batch["image"].to(device)
             labels = batch["label"].to(device)
-            suv_prior = batch["suv_prior"].view(-1,1).float().to(device)
+            priors = batch["prior"].float().to(device)
 
             optimizer.zero_grad()
 
-            outputs = model(inputs, suv_prior)
+            outputs = model(inputs, priors)
             loss = loss_function(outputs, labels)
             loss.backward()
+
+            # Monitora spinta gradienti su Film
+            g_norm = get_grad_norm(model)
+
             optimizer.step()
+
+            # Monitora quanto sono "cresciuti" i pesi del FiLM
+            w_norm = get_film_stats(model)
+
+            print(f"Metrics - FiLM Grad Norm: {g_norm:.6f}, FiLM Weight Norm: {w_norm:.6f}")
 
             epoch_loss += loss.item()
 
@@ -101,11 +115,14 @@ def train():
                 for val_batch in val_progress_bar:
                     val_images = val_batch["image"].to(device)
                     val_labels = val_batch["label"].to(device)
-                    val_suv = val_batch["suv_prior"].view(-1, 1).float().to(device)
+                    val_priors = val_batch["prior"].view(-1, 1).float().to(device)
 
                     val_outputs = sliding_window_inference(
-                        val_images, (128, 128, 128), 4, model, suv_prior=val_suv
-                    )
+                        val_images, 
+                        (128,128,128), 
+                        sw_batch_size=1, 
+                        predictor = lambda x: model(x, val_priors) # Passiamo i prior qui!
+                        )
                     
                     val_outputs = (torch.sigmoid(val_outputs) > 0.5).float()
                     dice_metric(y_pred=val_outputs, y=val_labels)
