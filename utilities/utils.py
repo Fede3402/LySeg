@@ -55,7 +55,7 @@ def save_checkpoint(
     state = {
         'epoch': epoch,
         'model_state_dict': model.state_dict(),
-        'optimizer_state_dict': optimizer.state,
+        'optimizer_state_dict': optimizer.state_dict(),
         'scheduler_state_dict': scheduler.state_dict(),
         'dice_best': dice_best,
         'loss_history': loss_history,
@@ -64,10 +64,10 @@ def save_checkpoint(
     }
 
     # checkpoint_dir configuration 
-    os.makedirs(os.path.dirname(checkpoint_dir), exist_ok=True)
+    os.makedirs(checkpoint_dir, exist_ok=True)
+    save_path = os.path.join(checkpoint_dir, "best_model.pth")
+    torch.save(state, save_path)
 
-    torch.save(state, checkpoint_dir)
-s
 def load_checkpoint(filepath, model, optimizer=None, scheduler=None):
     """
     Carica i pesi adattandosi a qualsiasi configurazione (1 GPU o 2+ GPU).

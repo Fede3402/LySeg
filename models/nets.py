@@ -152,7 +152,7 @@ class PriorUNet(nn.Module):
 
         return out
     
-class StandardCustomUNet(nn.module):
+class StandardCustomUNet(nn.Module):
     def __init__(
             self, 
             spatial_dims = 3, 

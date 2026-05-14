@@ -9,11 +9,12 @@ import json
 
 from tqdm import tqdm
 
-
 from monai.losses import DiceCELoss
 from monai.metrics import DiceMetric
 from monai.inferers import sliding_window_inference
 from torch.optim.lr_scheduler import CosineAnnealingLR
+from torch.utils.tensorboard import SummaryWriter
+
 
 
 from ..models.nets import PriorUNet
@@ -74,6 +75,9 @@ def train():
     best_dice = -1
     print("Starting training loop...")
 
+    writer = SummaryWriter("runs/prior_unet_experiment")
+
+
     # Training loop
     for epoch in range(max_epochs):
         
@@ -105,6 +109,12 @@ def train():
             # Monitora quanto sono "cresciuti" i pesi del FiLM
             w_norm = get_film_stats(raw_model)
 
+            global_step = epoch * len(train_loader) + step
+            writer.add_scalar("Loss/train", loss.item(), global_step)
+            writer.add_scalar("Train/GradNorm", g_norm, global_step)
+            writer.add_scalar("Train/FiLMWeightNorm", w_norm, global_step)
+
+
             epoch_loss += loss.item()
 
             progress_bar.set_postfix({
@@ -114,7 +124,11 @@ def train():
                })
 
         epoch_loss /= step
+        
         loss_history.append(epoch_loss)
+
+        writer.add_scalar("Train/Loss_epoch", epoch_loss, epoch)
+
         print(f"[*] Fine Epoca {epoch} - Training Loss Media: {epoch_loss:.4f}")
 
         del inputs, labels, priors, outputs, loss
@@ -122,7 +136,9 @@ def train():
 
         scheduler.step()
 
-        
+        current_lr = scheduler.get_last_lr()[0]
+        writer.add_scalar("Train/LearningRate", current_lr, epoch)
+
         if epoch % val_interval == 0:
             print("Starting validation")
 
@@ -153,6 +169,7 @@ def train():
                 metric = dice_metric.aggregate().item()
                 dice_history.append(metric)
 
+
                 dice_metric.reset()
                 
                 print(f">>> VALIDAZIONE Epoca {epoch} completata! Dice Score: {metric:.4f}")
@@ -166,7 +183,8 @@ def train():
                 del val_images, val_labels, val_priors, val_outputs
                 # Svuotiamo la cache della GPU fisicamente
                 torch.cuda.empty_cache()
-                
+    
+    writer.close()            
 
 if __name__ == "__main__":
     train()
@@ -177,7 +195,3 @@ if __name__ == "__main__":
 
 
         
-
-
-
-
