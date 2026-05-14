@@ -41,7 +41,7 @@ def get_loaders(json_path: str, batch_size: int = 4):
             prob=0.2, rotate_range=(0.2, 0.2, 0.2), scale_range=(0.1, 0.1, 0.1)
         ),
         RandGaussianNoised(keys=["image"], prob=0.1, std=0.05),
-        RandFlipd(keys=["image", "label"], spatial_axis=[0, 1, 2], prob=0.5),
+        #RandFlipd(keys=["image", "label"], spatial_axis=[0, 1, 2], prob=0.5),
         ToTensord(keys=["image", "label", "prior"])
     ])
 

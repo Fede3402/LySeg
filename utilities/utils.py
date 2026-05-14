@@ -64,10 +64,10 @@ def save_checkpoint(
     }
 
     # checkpoint_dir configuration 
-    os.makedir(os.path.dirname(checkpoint_dir), exist_ok=True)
+    os.makedirs(os.path.dirname(checkpoint_dir), exist_ok=True)
 
     torch.save(state, checkpoint_dir)
-
+s
 def load_checkpoint(filepath, model, optimizer=None, scheduler=None):
     """
     Carica i pesi adattandosi a qualsiasi configurazione (1 GPU o 2+ GPU).
