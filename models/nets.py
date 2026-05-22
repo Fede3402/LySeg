@@ -203,7 +203,7 @@ class StandardCustomUNet(nn.Module):
             )
 
         # Encoder path: level 0 is stride 1, others are stride 2
-        self.enc1 = _get_res_block(in_channels, channels[0], stride=1)
+        self.enc1 = _get_res_block(in_channels, channels[0], stride=2)
         self.enc2 = _get_res_block(channels[0], channels[1], stride=2)
         self.enc3 = _get_res_block(channels[1], channels[2], stride=2)
         self.enc4 = _get_res_block(channels[2], channels[3], stride=2)
